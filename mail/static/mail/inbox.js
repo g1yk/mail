@@ -29,11 +29,6 @@ function compose_email() {
 
 function display_sent() {
   load_mailbox('sent')
-  addTable();
-
-
-
-
 
   fetch('/emails/sent')
     .then(response => response.json())
@@ -86,6 +81,9 @@ function display_mails(mail, heading, time) {
 
   const row = document.createElement('div')
   row.className = 'row border border-dark';
+  row.addEventListener('click', function() {
+    console.log('This element has been clicked!')
+  })
 
 
   const email = document.createElement('div')
@@ -100,6 +98,7 @@ function display_mails(mail, heading, time) {
   const topic = document.createElement('div')
   topic.className = 'col-sm-4 col-md-5'
   topic.innerHTML = heading;
+  
 
   const date = document.createElement('div')
   date.className = 'col-sm-4 col-md-3'
