@@ -27,8 +27,47 @@ function compose_email() {
 }
 
 
+function open_email(id) {
+  console.log(id)
+
+  fetch(`/emails/${id}`)
+    .then(response => response.json())
+    .then(data => {
+      let subject = data.subject;
+      let timestamp = data.timestamp;
+      let recipients = data.recipients;
+      const sender = data.sender;
+
+      console.log(subject, timestamp, recipients)
+
+      
+
+      load_email(`${data.subject}`)
+      document.querySelector('#from').innerHTML = sender;
+      document.querySelector('#to').innerHTML = data.recipients;
+      document.querySelector('#subject').innerHTML = subject;
+      document.querySelector('#timezone').innerHTML = timestamp;
+      document.querySelector('#mail-body').innerHTML = data.body;
+
+
+    })
+    // Mark email as read
+    fetch(`/emails/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ read: true }),
+    })
+      .catch(error => {
+        console.log(error)
+      });
+}
+
+
+
+
+
+
 function display_emails(mailbox) {
-  console.log(mailbox, typeof(mailbox))
+  console.log(mailbox, typeof (mailbox))
   load_mailbox(`${mailbox}`)
 
   fetch(`/emails/${mailbox}`)
@@ -39,18 +78,26 @@ function display_emails(mailbox) {
       let timestamp = data.timestamp;
       let recipients = data.recipients;
 
-      display_mails(recipients, subject, timestamp)
+      display_mails(recipients, subject, timestamp, data)
     }))
     );
 }
 
 // Generating UI for sent mails
-function display_mails(mail, heading, time) {
-  // Creating row for each mail
+function display_mails(mail, heading, time, data) {
+
+
+
+  // Creating div row for each mail
   const row = document.createElement('div')
-  row.className = 'row border border-dark';
+  if (data.read) {
+    row.className = 'row border border-dark bg-white';
+  } else {
+    row.className = 'row border border-dark bg-secondary';
+  }
+
   row.addEventListener('click', function () {
-    console.log('This element has been clicked!')
+    open_email(data.id)
   })
 
 
@@ -113,7 +160,26 @@ function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
+  document.querySelector('#email-view').style.display = 'none';
+
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+}
+
+function load_email(subject) {
+
+  // Show the mailbox and hide other views
+  document.querySelector('#email-view').style.display = 'block';
+  console.log('block')
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'none';
+
+  document.querySelector('#from').value = 'hello';
+  document.querySelector('#to').value = '';
+  document.querySelector('#subject').value = '';
+
+
+  // Show the mailbox name
+  // document.querySelector('#email-view').innerHTML = '';
 }
