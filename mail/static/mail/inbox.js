@@ -71,36 +71,42 @@ function display_mails(mail, heading, time, data, mailbox) {
   }
 
   if (mailbox != 'sent') {
-    let icon_div = document.createElement('div')
-    icon_div.className = 'col-sm';
-    let archive_icon = document.createElement('i')
-    archive_icon.className = 'fas fa-archive text-secondary'
+      let archive_status = '';
+      let icon_div = document.createElement('div')
+      icon_div.className = 'col-sm';
+      let archive_icon = document.createElement('i')
+      archive_icon.className = 'fas fa-archive text-secondary'
 
-    icon_div.addEventListener('click', function(e) {
-        console.log('archieved, ', data.id)
-        fetch(`/emails/${data.id}`, {
-                method: 'PUT',
-                body: JSON.stringify({
-                    archived: true
-                }),
-            })
-            .then(() => {
-                console.log('success')
-            })
-            .catch(error => {
-                console.log(error)
-            });
-        e.stopPropagation();
-    })
-  icon_div.append(archive_icon)
-  row.append(icon_div)
+      icon_div.addEventListener('click', function(e) {
+          if (data.archived === true) {
+              archive_status = false
+          } else {
+              archive_status = true
+          }
 
-
+          fetch(`/emails/${data.id}`, {
+                  method: 'PUT',
+                  body: JSON.stringify({
+                      archived: archive_status
+                  }),
+              })
+              .then(() => {
+                  console.log('success')
+                  display_emails('inbox')
+              })
+              .catch(error => {
+                  console.log(error)
+              });
+          e.stopPropagation();
+      })
+      icon_div.append(archive_icon)
+      row.append(icon_div)
   }
-  
+
   row.addEventListener('click', function() {
       open_email(data.id)
   })
+
   const email = document.createElement('div')
   email.className = 'col-sm-3 col-md-3';
   for (onemail in mail) {
