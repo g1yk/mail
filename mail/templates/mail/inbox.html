@@ -32,6 +32,23 @@
     </form>
 </div>
 
+<!-- <div id="reply-view">
+    <h3>Reply</h3>
+    
+    <form id="reply-form">
+        <div class="form-group">
+            From: <input disabled class="form-control" value="{{ request.user.email }}">
+        </div>
+        <div class="form-group">
+            To: <input id="reply-to" class="form-control">
+        </div>
+        <div class="form-group">
+            <input class="form-control" id="reply-subject" placeholder="Subject">
+        </div>
+        <textarea class="form-control" id="reply-body" placeholder="Body"></textarea>
+        <input type="submit" class="btn btn-primary" />
+    </form>
+</div> -->
 
 <div id="email-view"> 
     <div class="sender row ml-1 g-0"><b>From: </b> 
@@ -54,10 +71,12 @@
         </div>
     </div>
 
-    <button class="btn btn-sm btn-outline-primary" id="reply">Reply</button>
+    <button class="btn btn-sm btn-outline-primary" id="reply-button">Reply</button>
     <hr>
 
-    <div id="mail-body"></div>
+    <div><p id="mail-body">
+
+    </p></div>
 </div>
 
 {% endblock %}

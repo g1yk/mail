@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function compose_email() {
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
+  // document.querySelector('#reply-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
   // Clear out composition fields
   document.querySelector('#compose-recipients').value = '';
@@ -19,8 +20,12 @@ function compose_email() {
   document.getElementById('compose-form').addEventListener('submit', send_email)
 }
 
-function open_email(id) {
+function display_email(id, data) {
   console.log(id)
+  document.querySelector('#reply-button').addEventListener('click', function() {
+    console.log('button pressed')
+    reply(data)
+  })
   fetch(`/emails/${id}`)
       .then(response => response.json())
       .then(data => {
@@ -34,7 +39,8 @@ function open_email(id) {
           document.querySelector('#to').innerHTML = data.recipients;
           document.querySelector('#subject').innerHTML = subject;
           document.querySelector('#timezone').innerHTML = timestamp;
-          document.querySelector('#mail-body').innerHTML = data.body;
+          console.log(data.body)
+          document.querySelector('#mail-body').innerText = data.body;
       })
   // Mark email as read
   fetch(`/emails/${id}`, {
@@ -56,12 +62,13 @@ function display_emails(mailbox) {
           let subject = data.subject;
           let timestamp = data.timestamp;
           let recipients = data.recipients;
-          display_mails(recipients, subject, timestamp, data, mailbox)
+          let sender = data.sender;
+          display_mails(recipients, sender, subject, timestamp, data, mailbox)
       })));
 }
 
 // Generating UI for mails
-function display_mails(mail, heading, time, data, mailbox) {
+function display_mails(mail, sender, heading, time, data, mailbox) {
   // Creating div row for each mail
   const row = document.createElement('div')
   if (data.read) {
@@ -104,14 +111,15 @@ function display_mails(mail, heading, time, data, mailbox) {
   }
 
   row.addEventListener('click', function() {
-      open_email(data.id)
+      display_email(data.id, data)
   })
 
   const email = document.createElement('div')
   email.className = 'col-sm-3 col-md-3';
-  for (onemail in mail) {
-      email.innerHTML += mail[onemail] + ' ';
-  }
+  email.innerHTML = sender;
+  // for (onemail in mail) {
+  //     email.innerHTML += mail[onemail] + ' ';
+  // }
   const topic = document.createElement('div')
   topic.className = 'col-sm-4 col-md-5'
   topic.innerHTML = heading;
@@ -125,6 +133,48 @@ function display_mails(mail, heading, time, data, mailbox) {
 function addTable() {
   const element = document.createElement('div').className = "row pr-5";
   element.value = "hello"
+}
+
+function get_emails(arr) {
+  let senders = ''
+  for (let i = 0; i < arr.length; i++) {
+    if (arr === 0) {
+      return arr
+    }
+    else if (i+1 === arr.length) {
+      senders += arr[i];
+    } else {
+      senders += arr[i] + ', ';
+    }
+  }
+   return document.querySelector('#reply-recipients').value = senders;
+}
+
+function reply(data) {
+  document.querySelector('#email-view').style.display = 'none';
+  // document.querySelector('#reply-view').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'block';
+  document.querySelector('#compose-recipients').value = data.sender
+  document.querySelector('#compose-subject').value = get_subject(data.subject)
+  document.querySelector('#compose-body').value = get_body(data)
+  document.getElementById('compose-form').addEventListener('submit', send_email)
+  
+
+}
+
+function get_body(data) {
+  return `\nOn ${data.timestamp} ${data.sender} wrote:
+${data.body}`
+
+
+}
+
+function get_subject(subject) {
+  if (subject.startsWith('Re: ')) {
+    return subject;
+  } else {
+    return 'Re: ' + subject;
+  }
 }
 
 function send_email(event) {
@@ -156,6 +206,7 @@ function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
+  // document.querySelector('#reply-view').style.display = 'none';
   document.querySelector('#email-view').style.display = 'none';
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
@@ -166,6 +217,7 @@ function load_email(subject) {
   document.querySelector('#email-view').style.display = 'block';
   console.log('block')
   document.querySelector('#emails-view').style.display = 'none';
+  // document.querySelector('#reply-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'none';
   document.querySelector('#from').value = 'hello';
   document.querySelector('#to').value = '';
