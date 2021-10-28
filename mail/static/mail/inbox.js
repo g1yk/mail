@@ -1,9 +1,9 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
 
   // Use buttons to toggle between views
   document.querySelector('#inbox').addEventListener('click', () => display_emails('inbox'));
   document.querySelector('#sent').addEventListener('click', () => display_emails('sent'));
-  document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
+  document.querySelector('#archived').addEventListener('click', () => display_emails('archive'));
   document.querySelector('#compose').addEventListener('click', compose_email);
 
 
@@ -31,80 +31,103 @@ function open_email(id) {
   console.log(id)
 
   fetch(`/emails/${id}`)
-    .then(response => response.json())
-    .then(data => {
-      let subject = data.subject;
-      let timestamp = data.timestamp;
-      let recipients = data.recipients;
-      const sender = data.sender;
+      .then(response => response.json())
+      .then(data => {
+          let subject = data.subject;
+          let timestamp = data.timestamp;
+          let recipients = data.recipients;
+          const sender = data.sender;
 
-      console.log(subject, timestamp, recipients)
+          console.log(subject, timestamp, recipients)
 
-      
-
-      load_email(`${data.subject}`)
-      document.querySelector('#from').innerHTML = sender;
-      document.querySelector('#to').innerHTML = data.recipients;
-      document.querySelector('#subject').innerHTML = subject;
-      document.querySelector('#timezone').innerHTML = timestamp;
-      document.querySelector('#mail-body').innerHTML = data.body;
+          load_email(`${data.subject}`)
+          document.querySelector('#from').innerHTML = sender;
+          document.querySelector('#to').innerHTML = data.recipients;
+          document.querySelector('#subject').innerHTML = subject;
+          document.querySelector('#timezone').innerHTML = timestamp;
+          document.querySelector('#mail-body').innerHTML = data.body;
 
 
-    })
-    // Mark email as read
-    fetch(`/emails/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify({ read: true }),
-    })
+      })
+  // Mark email as read
+  fetch(`/emails/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+              read: true
+          }),
+      })
       .catch(error => {
-        console.log(error)
+          console.log(error)
       });
 }
 
 
 
 
-
-
 function display_emails(mailbox) {
-  console.log(mailbox, typeof (mailbox))
+
   load_mailbox(`${mailbox}`)
-
   fetch(`/emails/${mailbox}`)
-    .then(response => response.json())
-    .then(data => console.log(data.forEach(function (data) {
+      .then(response => response.json())
+      .then(data => console.log(data.forEach(function(data) {
 
-      let subject = data.subject;
-      let timestamp = data.timestamp;
-      let recipients = data.recipients;
+          let subject = data.subject;
+          let timestamp = data.timestamp;
+          let recipients = data.recipients;
 
-      display_mails(recipients, subject, timestamp, data)
-    }))
-    );
+          display_mails(recipients, subject, timestamp, data, mailbox)
+      })));
 }
 
-// Generating UI for sent mails
-function display_mails(mail, heading, time, data) {
-
-
+// Generating UI for mails
+function display_mails(mail, heading, time, data, mailbox) {
 
   // Creating div row for each mail
   const row = document.createElement('div')
   if (data.read) {
-    row.className = 'row border border-dark bg-white';
+      row.className = 'row border border-dark bg-white';
   } else {
-    row.className = 'row border border-dark bg-secondary';
+      row.className = 'row border border-dark bg-secondary';
   }
 
-  row.addEventListener('click', function () {
-    open_email(data.id)
+    let icon_div = document.createElement('div')
+    icon_div.className = 'col-sm';
+    let archive_icon = document.createElement('i')
+    archive_icon.className = 'fas fa-archive text-secondary'
+  
+    icon_div.addEventListener('click', function(e) {
+        console.log('archieved, ', data.id)
+  
+        fetch(`/emails/${data.id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    archived: true
+                }),
+            })
+            .then(() => {
+                console.log('success')
+            })
+            .catch(error => {
+                console.log(error)
+            });
+  
+        e.stopPropagation();
+    })
+
+ 
+
+  row.addEventListener('click', function() {
+      open_email(data.id)
   })
 
 
+
+  icon_div.append(archive_icon)
+
   const email = document.createElement('div')
-  email.className = 'col-sm-4 col-md-3';
+  email.className = 'col-sm-3 col-md-3';
   for (onemail in mail) {
-    email.innerHTML += mail[onemail] + ' ';
+      email.innerHTML += mail[onemail] + ' ';
   }
 
   const topic = document.createElement('div')
@@ -115,7 +138,7 @@ function display_mails(mail, heading, time, data) {
   date.className = 'col-sm-4 col-md-3'
   date.innerHTML = time;
 
-  row.append(email, topic, date)
+  row.append(icon_div, email, topic, date)
   document.querySelector('#emails-view').append(row)
 
 }
@@ -135,22 +158,22 @@ function send_email(event) {
   console.log(` Recipient ${recipient}, subject ${subject}, body ${body} `);
 
   fetch('/emails', {
-    method: 'POST',
-    body: JSON.stringify({
-      recipients: recipient,
-      subject: subject,
-      body: body
-    })
-  })
-    .then(response => response.json())
-    .then(result => {
-      // Print result
-      console.log(result);
-      display_emails('sent');
-    })
-    .catch(error => {
-      console.log(`Error ${error}`);
-    });
+          method: 'POST',
+          body: JSON.stringify({
+              recipients: recipient,
+              subject: subject,
+              body: body
+          })
+      })
+      .then(response => response.json())
+      .then(result => {
+          // Print result
+          console.log(result);
+          display_emails('sent');
+      })
+      .catch(error => {
+          console.log(`Error ${error}`);
+      });
 
   event.preventDefault();
 }
