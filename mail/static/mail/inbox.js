@@ -72,9 +72,9 @@ function display_mails(mail, sender, heading, time, data, mailbox) {
   // Creating div row for each mail
   const row = document.createElement('div')
   if (data.read) {
-      row.className = 'row border border-dark bg-white';
-  } else {
       row.className = 'row border border-dark bg-secondary';
+  } else {
+      row.className = 'row border border-dark bg-white';
   }
 
   if (mailbox != 'sent') {
@@ -82,7 +82,7 @@ function display_mails(mail, sender, heading, time, data, mailbox) {
       let icon_div = document.createElement('div')
       icon_div.className = 'col-sm';
       let archive_icon = document.createElement('i')
-      archive_icon.className = 'fas fa-archive text-secondary'
+      archive_icon.className = 'fas fa-archive text-black'
 
       icon_div.addEventListener('click', function(e) {
           if (data.archived === true) {
